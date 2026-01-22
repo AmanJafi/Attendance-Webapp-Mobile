@@ -449,3 +449,14 @@ input:focus {
     font-weight: 700;
     color: var(--text);
 }
+
+.version-tag {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    padding: 8px 12px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 8px;
+    pointer-events: auto;
+}
