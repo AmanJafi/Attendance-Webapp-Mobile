@@ -22,10 +22,28 @@
     </header>
 
     <main id="app">
-      <!-- Home Screen -->
-      <section id="home-screen" class="screen">
+      <!-- Semester Selection Screen -->
+      <section id="sem-screen" class="screen">
+        <div class="card glass intro-card">
+          <h2>Select Semester</h2>
+          <p class="subtitle-text">Choose your current semester</p>
+          <div class="semester-grid" id="semester-grid">
+            <!-- Semesters 1-8 injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Subject Selection Screen -->
+      <section id="home-screen" class="screen hidden">
+        <div class="back-btn" id="back-to-sem">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Semesters
+        </div>
         <div class="card glass">
-          <h2>Select Subject</h2>
+          <h2 id="sem-title">Subjects</h2>
           <div class="subject-picker" id="subject-list">
             <!-- Subjects will be injected here -->
           </div>
