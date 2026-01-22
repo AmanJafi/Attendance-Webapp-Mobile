@@ -5,7 +5,8 @@ const credits = {
   ICS121: 5,
   IMA121: 4,
   ICS123: 4,
-  IEC121: 5
+  IEC121: 5,
+  IEC122: 4 // Electronics Specialized Course
 };
 
 const translation = {
@@ -14,7 +15,8 @@ const translation = {
   ICS121: "DATA STRUCTURES",
   IMA121: "CALCULUS AND LINEAR ALGEBRA",
   ICS123: "IT WORKSHOP 2",
-  IEC121: "DIGITAL DESIGN AND EC"
+  IEC121: "DIGITAL DESIGN AND EC",
+  IEC122: "SIGNALS AND SYSTEMS"
 };
 
 const timetable = {
@@ -36,27 +38,69 @@ const sem2 = {
   Friday: 14
 };
 
-const subjects = ["ICS121", "ICS122", "ICS123", "IHS121", "IMA121", "IEC121"];
+// Data Structures
+const branches = [
+  { id: 'aids', name: 'AI & Data Science', icon: '🤖' },
+  { id: 'cse', name: 'CSE Core', icon: '💻' },
+  { id: 'cyber', name: 'Cyber Security', icon: '🔒' },
+  { id: 'ece', name: 'Electronics (ECE)', icon: '⚡' }
+];
+
+// Default subjects for most branches
+const defaultSubjects = ["ICS121", "ICS122", "ICS123", "IHS121", "IMA121", "IEC121"];
+// Specialized map
+const branchSubjects = {
+  aids: defaultSubjects,
+  cse: defaultSubjects,
+  cyber: defaultSubjects,
+  ece: ["ICS121", "ICS122", "IEC122", "IHS121", "IMA121", "IEC121"] // IEC122 instead of ICS123
+};
 
 // State
+let selectedBranch = null;
 let selectedSemester = null;
 let selectedSubject = null;
 
 // UI Elements
+const branchScreen = document.getElementById('branch-screen');
 const semScreen = document.getElementById('sem-screen');
 const homeScreen = document.getElementById('home-screen'); // Subject List
 const calcScreen = document.getElementById('calc-screen');
+
+const branchGrid = document.getElementById('branch-grid');
 const semesterGrid = document.getElementById('semester-grid');
 const subjectList = document.getElementById('subject-list');
+
+const backToBranch = document.getElementById('back-to-branch');
 const backToSem = document.getElementById('back-to-sem');
 const backToHome = document.getElementById('back-to-home');
+
 const percentageInput = document.getElementById('percentage');
 const resultsContainer = document.getElementById('results');
 
 // Initialize App
 function init() {
+  renderBranches();
   renderSemesters();
-  renderSubjects(); // Pre-render subject list for Sem 2
+}
+
+function renderBranches() {
+  branchGrid.innerHTML = '';
+  branches.forEach(branch => {
+    const item = document.createElement('div');
+    item.className = 'branch-item';
+    item.innerHTML = `
+            <span class="branch-name">${branch.name}</span>
+            <span class="branch-icon">${branch.icon}</span>
+        `;
+    item.addEventListener('click', () => selectBranch(branch.id));
+    branchGrid.appendChild(item);
+  });
+}
+
+function selectBranch(branchId) {
+  selectedBranch = branchId;
+  showScreen(semScreen);
 }
 
 function renderSemesters() {
@@ -79,12 +123,15 @@ function selectSemester(sem) {
     return;
   }
   selectedSemester = sem;
+  renderSubjects(); // Render based on selected branch
   showScreen(homeScreen);
 }
 
 function renderSubjects() {
   subjectList.innerHTML = '';
-  subjects.forEach(code => {
+  const currentSubjects = branchSubjects[selectedBranch] || defaultSubjects;
+
+  currentSubjects.forEach(code => {
     const item = document.createElement('div');
     item.className = 'subject-item';
     item.innerHTML = `
@@ -108,18 +155,22 @@ function selectSubject(code) {
 
   percentageInput.value = '';
   resultsContainer.classList.add('hidden');
-  // Auto-focus input for better UX? Maybe not on mobile to prevent keyboard jumpt
 }
 
 // Navigation Helper
 function showScreen(screenToShow) {
   // Hide all screens
-  [semScreen, homeScreen, calcScreen].forEach(s => s.classList.add('hidden'));
+  [branchScreen, semScreen, homeScreen, calcScreen].forEach(s => s.classList.add('hidden'));
   // Show target
   screenToShow.classList.remove('hidden');
 }
 
 // Back Buttons
+backToBranch.addEventListener('click', () => {
+  selectedBranch = null;
+  showScreen(branchScreen);
+});
+
 backToSem.addEventListener('click', () => {
   selectedSemester = null;
   showScreen(semScreen);
@@ -145,7 +196,16 @@ function calculate() {
 
   // Calculate total classes in sem
   let totalInSem = 0;
-  const subjectIndex = subjects.indexOf(selectedSubject);
+
+  // We need to map the CURRENT branch's subjects to the timetable index
+  // Note: The timetable array is fixed [index 0-5]. 
+  // Usually, different branches have different timetables. 
+  // IF the timetable structure is identical (just subject name changes), we can map by index.
+  // Assuming IEC122 takes the same slot as ICS123 (Index 2 in default array).
+
+  const currentSubjects = branchSubjects[selectedBranch];
+  const subjectIndex = currentSubjects.indexOf(selectedSubject);
+
   for (const day in timetable) {
     const dayKey = day.charAt(0).toUpperCase() + day.slice(1);
     const dayCount = sem2[dayKey];

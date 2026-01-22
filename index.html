@@ -22,8 +22,26 @@
     </header>
 
     <main id="app">
+      <!-- Branch Selection Screen -->
+      <section id="branch-screen" class="screen">
+        <div class="card glass intro-card">
+          <h2>Select Branch</h2>
+          <p class="subtitle-text">Choose your specialization</p>
+          <div class="branch-grid" id="branch-grid">
+            <!-- Branches injected here -->
+          </div>
+        </div>
+      </section>
+
       <!-- Semester Selection Screen -->
-      <section id="sem-screen" class="screen">
+      <section id="sem-screen" class="screen hidden">
+        <div class="back-btn" id="back-to-branch">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Branches
+        </div>
         <div class="card glass intro-card">
           <h2>Select Semester</h2>
           <p class="subtitle-text">Choose your current semester</p>
