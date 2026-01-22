@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendly-v1';
+const CACHE_NAME = 'attendly-v2';
 const ASSETS = [
   './',
   './index.html',
