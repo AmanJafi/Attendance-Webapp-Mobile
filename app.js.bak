@@ -471,22 +471,3 @@ function calculate() {
 }
 
 init();
-
-// Visitor Counter
-function updateVisitorCount() {
-    const counterElement = document.getElementById('total-visits');
-    // Using countapi.xyz with a unique namespace 'attendly-webapp-v1'
-    // This increments the hit count and returns the new value.
-    fetch('https://api.countapi.xyz/hit/attendly-webapp-v1/visits')
-        .then(response => response.json())
-        .then(data => {
-            counterElement.innerText = data.value.toLocaleString();
-        })
-        .catch(err => {
-            console.error('Counter Error:', err);
-            counterElement.innerText = '---';
-        });
-}
-
-// Initialize
-updateVisitorCount();

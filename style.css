@@ -23,18 +23,20 @@ body {
   font-family: 'Outfit', sans-serif;
   background-color: var(--bg);
   color: var(--text);
-  overflow: hidden;
-  height: 100vh;
+  /* overflow: hidden; Removed to allow natural scrolling on mobile browsers that struggle with height: 100vh */
+  min-height: 100vh;
   width: 100vw;
 }
 
 .app-container {
   position: relative;
-  height: 100%;
+  min-height: 100vh;
+  /* Changed from height: 100% to min-height */
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 30px;
+  /* Increased padding */
   z-index: 10;
   max-width: 600px;
   margin: 0 auto;
@@ -69,9 +71,9 @@ h1 {
   flex: 1;
   width: 100%;
   transition: transform 0.4s var(--animation-curve), opacity 0.4s ease;
-  overflow-y: auto;
-  padding-bottom: 80px;
-  /* Space for scroll */
+  /* overflow-y: auto; handled by body now */
+  padding-bottom: 100px;
+  /* Increased bottom padding */
 }
 
 /* Scrollbar hiding */
@@ -375,37 +377,75 @@ input:focus {
     opacity: 1;
     transform: translateY(0);
   }
-}/* Branch Grid */
+}
+
+/* Branch Grid */
 .branch-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .branch-item {
-    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    transition: all 0.2s var(--animation-curve);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s var(--animation-curve);
 }
 
 .branch-item:active {
-    transform: scale(0.98);
-    background: var(--card-bg-hover);
+  transform: scale(0.98);
+  background: var(--card-bg-hover);
 }
 
 .branch-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .branch-icon {
-    font-size: 1.5rem;
-    opacity: 0.8;
+  font-size: 1.5rem;
+  opacity: 0.8;
+}
+/* Stats Footer */
+.stats-footer {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: none; /* Let clicks pass through to content behind */
+}
+
+.stat-bubble {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    pointer-events: auto; /* Re-enable clicks on the bubble itself */
+}
+
+.stat-icon {
+    font-size: 1rem;
+}
+
+#total-visits {
+    font-weight: 700;
+    color: var(--text);
 }
