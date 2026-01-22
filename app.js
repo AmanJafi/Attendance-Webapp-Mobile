@@ -240,7 +240,7 @@ const branchData = {
   }
 };
 
-// Timetable (Shared for now - This logic will need specialized timetables in the future)
+// Timetable (Specific to Sem 2, used for accuracy in Sem 2 only)
 const timetable = {
   monday: [2, 1, 1, 0, 0, 1],
   tuesday: [0, 0, 2, 0, 0, 1],
@@ -249,10 +249,7 @@ const timetable = {
   friday: [1, 1, 0, 0, 1, 1]
 };
 
-const startofsem = new Date("2026-01-01");
-const today = new Date();
-
-// This effectively weights the days of week
+// Sem 2 Day Count
 const sem2 = {
   Monday: 14,
   Tuesday: 13,
@@ -260,6 +257,10 @@ const sem2 = {
   Thursday: 14,
   Friday: 14
 };
+
+const startofsem = new Date("2026-01-01");
+const endofsem = new Date("2026-04-14"); // Restored end date
+const today = new Date();
 
 // Branch Config
 const branches = [
@@ -295,6 +296,7 @@ const resultsContainer = document.getElementById('results');
 function init() {
   renderBranches();
   renderSemesters();
+  updateVisitorCount();
 }
 
 function renderBranches() {
@@ -331,7 +333,6 @@ function renderSemesters() {
 }
 
 function selectSemester(sem) {
-  // No more "Coming Soon" - all data is here!
   selectedSemester = sem;
   renderSubjects();
   showScreen(homeScreen);
@@ -414,28 +415,27 @@ function calculate() {
     return;
   }
 
-  const totalTaken = Number(((today - startofsem) / (1000 * 60 * 60 * 24) * credit / 7)).toFixed(0);
+  // Days passed since start of semester
+  const daysPassed = (today - startofsem) / (1000 * 60 * 60 * 24);
+
+  // Total classes taken so far (Estimated as Credit * DaysPassed / 7)
+  // Assumption: Credit number roughly equates to classes per week.
+  const totalTaken = Number((daysPassed * credit / 7)).toFixed(0);
   const attended = (percentage / 100) * totalTaken;
 
-  // Approximate Total in Semester logic
-  // Since we don't have accurate timetables for every semester/branch yet,
-  // we will fallback to a multiplier estimation if exact timetable match fails or is 0.
-  // Default fallback: Assume standard distribution (~14 weeks * classes_per_week)?
-  // Actually, let's try to map to the timetable array if possible, else 50 classes?
-
+  // -- Calculate Total Classes in Semester --
   let totalInSem = 0;
+
+  // Use PRECISE timetable logic ONLY for Semester 2 (Indices 0-5)
+  // AND if the subject is part of the standard set that fits the timetable structure
   const currentSubjects = branchData[selectedBranch][selectedSemester];
   const subjectIndex = currentSubjects.indexOf(selectedSubject);
 
-  // Only run timetable logic if subjectIndex is within range of the simple timetable array (0-5)
-  // Most semesters have 6-8 subjects now, so the static timetable array [6 items]
-  // will be inaccurate for subjects at index 6 or 7.
-  // For now, we will use the timetable array for indices 0-5, and average for others.
-
-  if (subjectIndex < 6) {
+  // Strict check: Only use timetable if Sem 2 AND index is valid
+  if (selectedSemester === 2 && subjectIndex < 6) {
     for (const day in timetable) {
       const dayKey = day.charAt(0).toUpperCase() + day.slice(1);
-      const dayCount = sem2[dayKey]; // Using sem2 day-counts as generic filler
+      const dayCount = sem2[dayKey];
       const classes = timetable[day];
       if (classes[subjectIndex] !== undefined) {
         totalInSem += classes[subjectIndex] * dayCount;
@@ -443,18 +443,20 @@ function calculate() {
     }
   }
 
-  // Fallback if totalInSem is 0 (e.g. index > 5 or empty slot)
-  // A 4 credit course usually has ~50-60 classes/sem.
+  // Fallback/Generic Logic:
+  // If we didn't calculate via timetable (Sem 1, 3-8, or odd Sem 2 subjects),
+  // use the Date Range estimation to match the `totalTaken` scaling.
   if (totalInSem === 0) {
-    totalInSem = credit * 14; // Rough Estimate: Credit * 14 weeks
+    const totalSemDays = (endofsem - startofsem) / (1000 * 60 * 60 * 24);
+    totalInSem = Number((totalSemDays * credit / 7)).toFixed(0);
   }
 
+  // Ensure Future is not negative (if today is past endofsem)
   const future = Math.max(0, totalInSem - totalTaken);
 
   // Logic for missable classes
   let missable = 0;
   while (true) {
-    // formula: (attended + (future - missable)) / (totalTaken + future) >= 0.8
     let finalAtt = (attended + (future - missable)) / (Number(totalTaken) + future);
     if (finalAtt <= 0.80) break;
     missable++;
@@ -470,23 +472,18 @@ function calculate() {
   resultsContainer.classList.remove('hidden');
 }
 
-init();
-
 // Visitor Counter
 function updateVisitorCount() {
-    const counterElement = document.getElementById('total-visits');
-    // Using countapi.xyz with a unique namespace 'attendly-webapp-v1'
-    // This increments the hit count and returns the new value.
-    fetch('https://api.countapi.xyz/hit/attendly-webapp-v1/visits')
-        .then(response => response.json())
-        .then(data => {
-            counterElement.innerText = data.value.toLocaleString();
-        })
-        .catch(err => {
-            console.error('Counter Error:', err);
-            counterElement.innerText = '---';
-        });
+  const counterElement = document.getElementById('total-visits');
+  fetch('https://api.countapi.xyz/hit/attendly-webapp-v1/visits')
+    .then(response => response.json())
+    .then(data => {
+      counterElement.innerText = data.value.toLocaleString();
+    })
+    .catch(err => {
+      console.error('Counter Error:', err);
+      counterElement.innerText = '---';
+    });
 }
 
-// Initialize
-updateVisitorCount();
+init();
