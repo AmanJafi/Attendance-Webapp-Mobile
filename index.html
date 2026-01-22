@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Attendly - Attendance Calculator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app-container">
+    <header>
+      <h1>Attendly</h1>
+      <p class="subtitle">Stay on track</p>
+    </header>
+
+    <main id="app">
+      <!-- Home Screen -->
+      <section id="home-screen" class="screen">
+        <div class="card glass">
+          <h2>Select Subject</h2>
+          <div class="subject-picker" id="subject-list">
+            <!-- Subjects will be injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Calculator Screen -->
+      <section id="calc-screen" class="screen hidden">
+        <div class="back-btn" id="back-to-home">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Back
+        </div>
+
+        <div class="card glass">
+          <h2 id="current-subject-title">Subject</h2>
+          <p id="current-subject-code" class="subject-code"></p>
+
+          <div class="input-group">
+            <label for="percentage">Current Attendance (%)</label>
+            <input type="number" id="percentage" placeholder="e.g. 75" min="0" max="100">
+          </div>
+
+          <div id="results" class="results-container hidden">
+            <div class="stat-grid">
+              <div class="stat-item">
+                <span class="stat-label">Attended</span>
+                <span class="stat-value" id="res-attended">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Remaining</span>
+                <span class="stat-value" id="res-future">-</span>
+              </div>
+            </div>
+
+            <div class="main-stat">
+              <span class="stat-label">Missable Classes</span>
+              <span class="stat-value highlight" id="res-missable">-</span>
+            </div>
+
+            <div class="main-stat">
+              <span class="stat-label">Required for 80%</span>
+              <span class="stat-value highlight" id="res-required">-</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="background-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker Registered'))
+          .catch(err => console.log('Service Worker Failed', err));
+      });
+    }
+  </script>
+</body>
+
+</html>
