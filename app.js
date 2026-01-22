@@ -1,24 +1,45 @@
 // Core Data
 const credits = {
+  // Sem 2
   IHS121: 1,
   ICS122: 4,
   ICS121: 5,
   IMA121: 4,
   ICS123: 4,
   IEC121: 5,
-  IEC122: 4 // Electronics Specialized Course
+  IEC122: 4, // Electronics Specialized Course
+
+  // Sem 1
+  ICS112: 5,
+  IMA111: 4,
+  IEC111: 5,
+  IHS111: 3,
+  IHS112: 1,
+  IEC112: 4, // Electronics Sem 1
+  ICS111: 5  // IT Workshop 1 (Others)
 };
 
 const translation = {
+  // Sem 2
   IHS121: "PERSONALITY DEVELOPMENT",
   ICS122: "COMPUTER ORGANISATION",
   ICS121: "DATA STRUCTURES",
   IMA121: "CALCULUS AND LINEAR ALGEBRA",
   ICS123: "IT WORKSHOP 2",
   IEC121: "DIGITAL DESIGN AND EC",
-  IEC122: "SIGNALS AND SYSTEMS"
+  IEC122: "SIGNALS AND SYSTEMS",
+
+  // Sem 1
+  ICS112: "COMPUTER PROGRAMMING",
+  IMA111: "DISCRETE MATHEMATICS",
+  IEC111: "ELECTRONIC CIRCUITS",
+  IHS111: "COMMUNICATION SKILLS",
+  IHS112: "FOREIGN LANGUAGE",
+  IEC112: "NETWORK THEORY",
+  ICS111: "IT WORKSHOP 1"
 };
 
+// Timetable (Shared for now)
 const timetable = {
   monday: [2, 1, 1, 0, 0, 1],
   tuesday: [0, 0, 2, 0, 0, 1],
@@ -46,15 +67,16 @@ const branches = [
   { id: 'ece', name: 'Electronics (ECE)', icon: '⚡' }
 ];
 
-// Default subjects for most branches
-const defaultSubjects = ["ICS121", "ICS122", "ICS123", "IHS121", "IMA121", "IEC121"];
-// Specialized map
-const branchSubjects = {
-  aids: defaultSubjects,
-  cse: defaultSubjects,
-  cyber: defaultSubjects,
-  ece: ["ICS121", "ICS122", "IEC122", "IHS121", "IMA121", "IEC121"] // IEC122 instead of ICS123
-};
+// Sem 2 Subjects
+// Default: ICS121(0), ICS122(1), ICS123(2), IHS121(3), IMA121(4), IEC121(5)
+const sem2Default = ["ICS121", "ICS122", "ICS123", "IHS121", "IMA121", "IEC121"];
+const sem2Ece = ["ICS121", "ICS122", "IEC122", "IHS121", "IMA121", "IEC121"];
+
+// Sem 1 Subjects
+// Order matches Timetable index: 0, 1, 2, 3, 4, 5
+// 1. ICS112(5), 2. IMA111(4), 3. IEC111(5), 4. IHS111(3), 5. IHS112(1), 6. Branch Specific
+const sem1Default = ["ICS112", "IMA111", "IEC111", "IHS111", "IHS112", "ICS111"];
+const sem1Ece = ["ICS112", "IMA111", "IEC111", "IHS111", "IHS112", "IEC112"];
 
 // State
 let selectedBranch = null;
@@ -118,18 +140,33 @@ function renderSemesters() {
 }
 
 function selectSemester(sem) {
-  if (sem !== 2) {
+  if (sem !== 1 && sem !== 2) {
     alert("Data for Semester " + sem + " is coming soon!");
     return;
   }
   selectedSemester = sem;
-  renderSubjects(); // Render based on selected branch
+  renderSubjects();
   showScreen(homeScreen);
 }
 
 function renderSubjects() {
   subjectList.innerHTML = '';
-  const currentSubjects = branchSubjects[selectedBranch] || defaultSubjects;
+  let currentSubjects = [];
+
+  // Determine correct subject list based on Sem and Branch
+  if (selectedSemester === 1) {
+    if (selectedBranch === 'ece') {
+      currentSubjects = sem1Ece;
+    } else {
+      currentSubjects = sem1Default;
+    }
+  } else if (selectedSemester === 2) {
+    if (selectedBranch === 'ece') {
+      currentSubjects = sem2Ece;
+    } else {
+      currentSubjects = sem2Default;
+    }
+  }
 
   currentSubjects.forEach(code => {
     const item = document.createElement('div');
@@ -191,26 +228,30 @@ function calculate() {
     return;
   }
 
+  // Fix: credits[selectedSubject] could be undefined if subject not found, but it should be there.
   const totalTaken = Number(((today - startofsem) / (1000 * 60 * 60 * 24) * credits[selectedSubject] / 7)).toFixed(0);
   const attended = (percentage / 100) * totalTaken;
 
   // Calculate total classes in sem
   let totalInSem = 0;
 
-  // We need to map the CURRENT branch's subjects to the timetable index
-  // Note: The timetable array is fixed [index 0-5]. 
-  // Usually, different branches have different timetables. 
-  // IF the timetable structure is identical (just subject name changes), we can map by index.
-  // Assuming IEC122 takes the same slot as ICS123 (Index 2 in default array).
+  let currentSubjects = [];
+  if (selectedSemester === 1) {
+    currentSubjects = (selectedBranch === 'ece') ? sem1Ece : sem1Default;
+  } else {
+    currentSubjects = (selectedBranch === 'ece') ? sem2Ece : sem2Default;
+  }
 
-  const currentSubjects = branchSubjects[selectedBranch];
   const subjectIndex = currentSubjects.indexOf(selectedSubject);
 
   for (const day in timetable) {
     const dayKey = day.charAt(0).toUpperCase() + day.slice(1);
     const dayCount = sem2[dayKey];
     const classes = timetable[day];
-    totalInSem += classes[subjectIndex] * dayCount;
+    // Safety check if timetable index exists
+    if (classes[subjectIndex] !== undefined) {
+      totalInSem += classes[subjectIndex] * dayCount;
+    }
   }
 
   const future = totalInSem - totalTaken;
