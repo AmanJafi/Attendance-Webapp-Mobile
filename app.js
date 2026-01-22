@@ -240,26 +240,19 @@ const branchData = {
   }
 };
 
-// Timetable (Specific to Sem 2, used for accuracy in Sem 2 only)
 const timetable = {
+  // Mon: [Sub1, Sub2, Sub3, Sub4, Sub5, Sub6]
+  // 2=2classes, 1=1class, 0=none
   monday: [2, 1, 1, 0, 0, 1],
   tuesday: [0, 0, 2, 0, 0, 1],
   wednesday: [1, 1, 1, 1, 1, 1],
   thursday: [1, 1, 0, 0, 2, 1],
   friday: [1, 1, 0, 0, 1, 1]
-};
-
-// Sem 2 Day Count
-const sem2 = {
-  Monday: 14,
-  Tuesday: 13,
-  Wednesday: 13,
-  Thursday: 14,
-  Friday: 14
+  // Sat/Sun assumed 0
 };
 
 const startofsem = new Date("2026-01-01");
-const endofsem = new Date("2026-04-14"); // Restored end date
+const endofsem = new Date("2026-04-14");
 const today = new Date();
 
 // Branch Config
@@ -292,7 +285,7 @@ const backToHome = document.getElementById('back-to-home');
 const percentageInput = document.getElementById('percentage');
 const resultsContainer = document.getElementById('results');
 
-// Initialize App
+// Initialize
 function init() {
   renderBranches();
   renderSemesters();
@@ -340,15 +333,12 @@ function selectSemester(sem) {
 
 function renderSubjects() {
   subjectList.innerHTML = '';
-
-  // Safety check
   if (!branchData[selectedBranch] || !branchData[selectedBranch][selectedSemester]) {
     alert("Configuration Error: No data for this selection.");
     return;
   }
 
   const currentSubjects = branchData[selectedBranch][selectedSemester];
-
   currentSubjects.forEach(code => {
     const item = document.createElement('div');
     item.className = 'subject-item';
@@ -375,15 +365,11 @@ function selectSubject(code) {
   resultsContainer.classList.add('hidden');
 }
 
-// Navigation Helper
 function showScreen(screenToShow) {
-  // Hide all screens
   [branchScreen, semScreen, homeScreen, calcScreen].forEach(s => s.classList.add('hidden'));
-  // Show target
   screenToShow.classList.remove('hidden');
 }
 
-// Back Buttons
 backToBranch.addEventListener('click', () => {
   selectedBranch = null;
   showScreen(branchScreen);
@@ -399,9 +385,9 @@ backToHome.addEventListener('click', () => {
   showScreen(homeScreen);
 });
 
-// Calculation Logic
 percentageInput.addEventListener('input', calculate);
 
+// --- MAIN CALCULATION LOGIC ---
 function calculate() {
   const percentage = Number(percentageInput.value);
   if (!percentage || percentage < 0 || percentage > 100) {
@@ -410,61 +396,73 @@ function calculate() {
   }
 
   const credit = credits[selectedSubject];
-  if (!credit) {
-    console.error("Missing credit for", selectedSubject);
-    return;
-  }
+  if (!credit) return;
 
-  // Days passed since start of semester
-  const daysPassed = (today - startofsem) / (1000 * 60 * 60 * 24);
-
-  // Total classes taken so far (Estimated as Credit * DaysPassed / 7)
-  // Assumption: Credit number roughly equates to classes per week.
-  const totalTaken = Number((daysPassed * credit / 7)).toFixed(0);
-  const attended = (percentage / 100) * totalTaken;
-
-  // -- Calculate Total Classes in Semester --
-  let totalInSem = 0;
-
-  // Use PRECISE timetable logic ONLY for Semester 2 (Indices 0-5)
-  // AND if the subject is part of the standard set that fits the timetable structure
+  // Detect if we should use Semester 2 Timetable Logic
+  // Requirements: Semester 2 AND index < 6 (as timetable only covers 6 slots)
   const currentSubjects = branchData[selectedBranch][selectedSemester];
   const subjectIndex = currentSubjects.indexOf(selectedSubject);
+  const useTimetable = (selectedSemester === 2 && subjectIndex < 6);
 
-  // Strict check: Only use timetable if Sem 2 AND index is valid
-  if (selectedSemester === 2 && subjectIndex < 6) {
-    for (const day in timetable) {
-      const dayKey = day.charAt(0).toUpperCase() + day.slice(1);
-      const dayCount = sem2[dayKey];
-      const classes = timetable[day];
-      if (classes[subjectIndex] !== undefined) {
-        totalInSem += classes[subjectIndex] * dayCount;
+  let totalTaken = 0;
+  let totalInSem = 0;
+
+  if (useTimetable) {
+    // --- TIMETABLE MODE (Precision for Sem 2) ---
+    // 1. Calculate Taken (Start -> Today)
+    let loopDate = new Date(startofsem);
+    const calcEnd = (today > endofsem) ? endofsem : today;
+
+    while (loopDate <= calcEnd) {
+      const dayName = loopDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      if (timetable[dayName]) {
+        const classesToday = timetable[dayName][subjectIndex] || 0;
+        totalTaken += classesToday;
       }
+      loopDate.setDate(loopDate.getDate() + 1);
     }
-  }
 
-  // Fallback/Generic Logic:
-  // If we didn't calculate via timetable (Sem 1, 3-8, or odd Sem 2 subjects),
-  // use the Date Range estimation to match the `totalTaken` scaling.
-  if (totalInSem === 0) {
+    // 2. Calculate Total (Start -> End)
+    let semDate = new Date(startofsem);
+    while (semDate <= endofsem) {
+      const dayName = semDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      if (timetable[dayName]) {
+        const classesToday = timetable[dayName][subjectIndex] || 0;
+        totalInSem += classesToday;
+      }
+      semDate.setDate(semDate.getDate() + 1);
+    }
+  } else {
+    // --- FORMULA MODE (Credit = Classes/Week) ---
+    const daysPassed = (today - startofsem) / (1000 * 60 * 60 * 24);
     const totalSemDays = (endofsem - startofsem) / (1000 * 60 * 60 * 24);
-    totalInSem = Number((totalSemDays * credit / 7)).toFixed(0);
+
+    // Classes Taken = WeeksPassed * Credit
+    // totalTaken = (DaysPassed / 7) * Credit
+    totalTaken = (daysPassed / 7) * credit;
+    totalInSem = (totalSemDays / 7) * credit;
   }
 
-  // Ensure Future is not negative (if today is past endofsem)
+  // Rounding
+  totalTaken = Number(totalTaken).toFixed(0);
+  totalInSem = Number(totalInSem).toFixed(0);
+  const attended = (percentage / 100) * totalTaken;
   const future = Math.max(0, totalInSem - totalTaken);
 
-  // Logic for missable classes
+  // Missable Logic
   let missable = 0;
   while (true) {
-    let finalAtt = (attended + (future - missable)) / (Number(totalTaken) + future);
+    const totalClasses = Number(totalTaken) + future;
+    const projectedAttended = attended + (future - missable);
+    const finalAtt = projectedAttended / totalClasses;
+
     if (finalAtt <= 0.80) break;
     missable++;
     if (missable > future) break;
   }
   missable = Math.max(0, missable - 1);
 
-  document.getElementById('res-attended').textContent = attended.toFixed(0);
+  document.getElementById('res-attended').textContent = Number(attended).toFixed(0);
   document.getElementById('res-future').textContent = future;
   document.getElementById('res-missable').textContent = missable;
   document.getElementById('res-required').textContent = Math.max(0, future - missable);
@@ -472,18 +470,12 @@ function calculate() {
   resultsContainer.classList.remove('hidden');
 }
 
-// Visitor Counter
 function updateVisitorCount() {
   const counterElement = document.getElementById('total-visits');
   fetch('https://api.countapi.xyz/hit/attendly-webapp-v1/visits')
     .then(response => response.json())
-    .then(data => {
-      counterElement.innerText = data.value.toLocaleString();
-    })
-    .catch(err => {
-      console.error('Counter Error:', err);
-      counterElement.innerText = '---';
-    });
+    .then(data => counterElement.innerText = data.value.toLocaleString())
+    .catch(err => counterElement.innerText = '---');
 }
 
 init();
