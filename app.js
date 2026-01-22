@@ -200,7 +200,7 @@ const translation = {
 const branchData = {
   aids: {
     1: ["IMA111", "ICS111", "ICS112", "IEC111", "IHS111", "IHS112"],
-    2: ["IMA121", "IEC121", "ICS121", "ICS122", "ICS123", "IHS121"],
+    2: ["ICS121", "ICS122", "ICS123", "IHS121", "IEC121", "IMA121"],
     3: ["IMA211", "ICS211", "ICS212", "ICS213", "ICS214", "ISC213", "ICS215"],
     4: ["IMA221", "ICS221", "ICS222", "ICS223", "ICS224", "ICS225", "IHS221", "IHS222"],
     5: ["CSE311", "CSE312", "ICS311", "IEC311", "IMA3XX", "IHS311", "IHS312", "IHS313"],
@@ -210,7 +210,7 @@ const branchData = {
   },
   cyber: {
     1: ["IMA111", "ICS111", "ICS112", "IEC111", "IHS111", "IHS112"],
-    2: ["IMA121", "IEC121", "ICS121", "ICS122", "ICS123", "IHS121"],
+    2: ["ICS121", "ICS122", "ICS123", "IHS121", "IEC121", "IMA121"],
     3: ["IMA211", "ICS211", "ICS212", "ICS213", "ICS214", "ISC212", "ICS215"],
     4: ["ICS221", "ICS226", "ICS223", "ICS224", "IMA221", "IHS221", "IHS223", "ICS225"],
     5: ["CBS311", "IEC312", "CBS312", "CBE331", "IMA312", "IHS314", "CBE312"],
@@ -220,7 +220,7 @@ const branchData = {
   },
   cse: {
     1: ["IMA111", "ICS111", "ICS112", "IEC111", "IHS111", "IHS112"],
-    2: ["IMA121", "IEC121", "ICS121", "ICS122", "ICS123", "IHS121"],
+    2: ["ICS121", "ICS122", "ICS123", "IHS121", "IEC121", "IMA121"],
     3: ["IMA211", "ICS211", "ICS212", "ICS213", "ICS214", "ISC211", "ICS215"],
     4: ["IMA221", "ICS221", "ICS222", "ICS223", "ICS224", "ICS225", "IHS221", "IHS222"],
     5: ["CSE311", "CSE312", "ICS311", "IEC311", "IMA311", "IHS311", "IHS312", "IHS313"],
@@ -230,7 +230,7 @@ const branchData = {
   },
   ece: {
     1: ["IMA111", "IEC111", "ICS112", "IEC112", "IHS111", "IHS112"],
-    2: ["IMA121", "IEC121", "ICS121", "ICS122", "IEC122", "IHS121"],
+    2: ["ICS121", "ICS122", "IEC122", "IHS121", "IEC121", "IMA121"],
     3: ["IMA211", "IEC211", "IEC212", "IEC213", "IEC214", "IEC215", "ICS215"],
     4: ["IMA221", "IEC221", "IEC222", "IEC223", "ICS224", "ICS225", "IHS221", "IHS222"],
     5: ["CSE311", "IEC313", "IEC311", "IMA312", "ECE312", "IHS311", "IHS312", "IHS313"],
@@ -241,6 +241,7 @@ const branchData = {
 };
 
 const timetable = {
+  //ics121 ics122 ics123 ihs121 iec121 ima121
   // Mon: [Sub1, Sub2, Sub3, Sub4, Sub5, Sub6]
   // 2=2classes, 1=1class, 0=none
   monday: [2, 1, 1, 0, 0, 1],
