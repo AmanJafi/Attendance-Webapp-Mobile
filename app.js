@@ -293,6 +293,80 @@ function init() {
   updateVisitorCount();
 }
 
+function updateUserBadge(rollNo) {
+  if (rollNo) {
+    userRollNoSpan.textContent = rollNo;
+    userBadge.classList.remove('hidden');
+
+    // Add click handler for logout
+    userBadge.onclick = () => {
+      if (confirm('Do you want to logout and re-register?')) {
+        localStorage.removeItem('student_roll_no');
+        updateUserBadge(null);
+        showScreen(regScreen);
+      }
+    };
+  } else {
+    userBadge.classList.add('hidden');
+    userBadge.onclick = null;
+  }
+}
+
+// --- FIREBASE CONFIGURATION ---
+export const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
+};
+
+// Initialize Firebase
+let db = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  console.log("Firebase Initialized");
+} catch (err) {
+  console.error("Firebase Initialization Failed:", err);
+}
+
+const ROLL_NO_REGEX = /^20\d{2}(BCD|BCY|BCS|BEC)\d{4}$/i;
+
+async function handleRegistration() {
+  const rollNo = regInput.value.trim().toUpperCase();
+
+  if (ROLL_NO_REGEX.test(rollNo)) {
+    // 1. Save locally immediately for snappy transition
+    localStorage.setItem('student_roll_no', rollNo);
+    updateUserBadge(rollNo);
+    regError.classList.add('hidden');
+    showScreen(branchScreen);
+
+    // 2. Save to Firebase Cloud in the background
+    if (db) {
+      try {
+        await db.collection('registrations').add({
+          roll_number: rollNo,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('Successfully saved to Firebase');
+      } catch (err) {
+        console.error('Error saving to Firebase:', err);
+      }
+    }
+  } else {
+    regError.classList.remove('hidden');
+  }
+}
+
+regSubmit.addEventListener('click', handleRegistration);
+regInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') handleRegistration();
+});
+
 function renderBranches() {
   branchGrid.innerHTML = '';
   branches.forEach(branch => {
