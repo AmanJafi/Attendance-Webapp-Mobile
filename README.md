@@ -1,1 +1,1 @@
-FOR WEBSITE VISIT : https://amanjafi.github.io/Attendance-Webapp-Mobile/
+FOR WEBSITE VISIT : https://attendly-46aaf.web.app
